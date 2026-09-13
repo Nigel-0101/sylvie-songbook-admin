@@ -4,7 +4,7 @@ const privateLink=key?new URL('#key='+encodeURIComponent(key),location.href).hre
 if(key)history.replaceState(null,'',location.pathname+location.search);
 window.addEventListener('hashchange',()=>{if(new URLSearchParams(location.hash.slice(1)).get('key'))location.reload();});
 const store=key?new GitHubCatalog({key}):null;
-let state=null,trash=false,page=0,editId=null,busy=false,publication=0;
+let state=null,trash=false,page=0,lastPage=0,editId=null,busy=false,publication=0;
 const selected=new Set(),size=25;
 const el=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;};
 const error=message=>{$('#error').hidden=!message;$('#error').textContent=message||'';};
@@ -14,7 +14,8 @@ function render(){
  const all=state?.songs||[],q=$('#search').value.trim().normalize('NFKC').toLowerCase();
  const match=s=>{if(!q)return true;const n=number(s);return /^\d+$/.test(q)?Number(n)===Number(q):`${s.name} ${s.singer}`.normalize('NFKC').toLowerCase().includes(q);};
  const filtered=all.filter(s=>!!s.deletedAt===trash&&match(s));
- page=Math.max(0,Math.min(page,Math.ceil(filtered.length/size)-1));$('#rows').replaceChildren();
+ lastPage=Math.max(0,Math.ceil(filtered.length/size)-1);
+ page=Math.max(0,Math.min(page,lastPage));$('#rows').replaceChildren();
  for(const song of filtered.slice(page*size,(page+1)*size)){
   const row=el('div',undefined,'row'),check=el('input');check.type='checkbox';check.checked=selected.has(String(song.id));check.disabled=busy;check.setAttribute('aria-label','选择 '+song.name);
   check.onchange=()=>{check.checked?selected.add(String(song.id)):selected.delete(String(song.id));render();};
@@ -30,7 +31,8 @@ function render(){
  $('#count').textContent=all.filter(s=>!s.deletedAt).length;$('#trash-count').textContent=all.filter(s=>s.deletedAt).length;
  $('#results').textContent=filtered.length+' 首';$('#empty').hidden=!state||filtered.length>0;
  $('#page').textContent=(page+1)+' / '+Math.max(1,Math.ceil(filtered.length/size));
- $('#prev').disabled=page===0||busy;$('#next').disabled=(page+1)*size>=filtered.length||busy;
+ $('#first').disabled=$('#prev').disabled=page===0||busy||!state;
+ $('#last').disabled=$('#next').disabled=page===lastPage||busy||!state;
  $('#bulk').textContent=trash?'恢复所选':'移入回收站';$('#bulk').disabled=!selected.size||busy||!state;
  $('#active-tab').classList.toggle('active',!trash);$('#trash-tab').classList.toggle('active',trash);
  const visible=filtered.slice(page*size,(page+1)*size);$('#select-page').checked=!!visible.length&&visible.every(s=>selected.has(String(s.id)));
@@ -88,6 +90,8 @@ $('#import-form').onsubmit=async event=>{
  }catch(e){formError('import-error',e);}
 };
 $('#search').oninput=()=>{page=0;selected.clear();render();};$('#prev').onclick=()=>{page--;render();};$('#next').onclick=()=>{page++;render();};$('#refresh').onclick=refresh;
+$('#first').onclick=()=>{page=0;render();$('#rows').firstElementChild?.scrollIntoView({block:'start'});};
+$('#last').onclick=()=>{page=lastPage;render();$('#rows').lastElementChild?.scrollIntoView({block:'end'});};
 $('#active-tab').onclick=()=>{trash=false;page=0;selected.clear();render();};$('#trash-tab').onclick=()=>{trash=true;page=0;selected.clear();render();};$('#add').onclick=()=>openEditor(null);$('#bulk').onclick=()=>changeSelection([...selected]);
 $('#import').onclick=()=>{$('#import-error').textContent='';$('#importer').showModal();};document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{if(!busy)$('#'+b.dataset.close).close();});
 document.querySelectorAll('dialog').forEach(d=>d.addEventListener('cancel',e=>{if(busy)e.preventDefault();}));
