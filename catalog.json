@@ -1,7 +1,7 @@
 {
-  "revision": 7,
-  "updatedAt": "2026-09-13T12:28:28.109Z",
-  "lastOperation": "d0c81ae0-c925-4237-8c03-55ecb1053af6",
+  "revision": 8,
+  "updatedAt": "2026-09-13T12:29:19.310Z",
+  "lastOperation": "595c1770-30ef-4515-83f8-5044d9cb7f03",
   "songs": [
     {
       "id": 600282,
@@ -12363,7 +12363,8 @@
       "language": "国语",
       "style": "流行",
       "id": "965926a7-27f1-4323-97f0-426a7340c1b4",
-      "createdAt": 1789302508110
+      "createdAt": 1789302508110,
+      "deletedAt": 1789302559311
     }
   ]
 }
