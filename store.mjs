@@ -40,7 +40,7 @@ export function applyChange(original,op){
   if(!Array.isArray(op.songs)||!op.songs.length||op.songs.length>1000)throw Error('每次请导入 1–1000 首歌曲。');
   const candidates=op.songs.map(songFields);
   for(const fields of candidates)if(!duplicates(fields))songs.push({...fields,id:uuid(),createdAt:now});
- }else throw Error('不支持的歌单操作。');
+ }else if(op.type!=='check-access')throw Error('不支持的歌单操作。');
  if(songs.length>5000)throw Error('歌单超过 5000 首上限，请先整理后再保存。');
  return songs;
 }
@@ -80,7 +80,7 @@ export class GitHubCatalog{
   const data={revision:state.revision+1,updatedAt:new Date().toISOString(),lastOperation:uuid(),songs:applyChange(state.songs,op)};
   const content=encode(data);
   if(content.length>1300000)throw Error('歌单文件已超过管理页支持的大小，请先导出备份并整理。');
-  const actions={add:'添加歌曲',edit:'编辑歌曲',remove:'移入回收站',restore:'恢复歌曲',import:'批量导入歌曲'};
+  const actions={add:'添加歌曲',edit:'编辑歌曲',remove:'移入回收站',restore:'恢复歌曲',import:'批量导入歌曲','check-access':'核验管理链接写入权限'};
   try{
    const result=await this.api('PUT',{branch:'main',message:`${actions[op.type]} · 歌单第 ${data.revision} 版`,sha:state.sha,content});
    if(!result.content?.sha)throw Error('保存响应不完整');
