@@ -45,7 +45,7 @@ function render(){
 async function watchPublication(snapshot){
  const ticket=++publication,deadline=Date.now()+360000;
  while(ticket===publication&&Date.now()<deadline){
-  try{if(await store.isPublished(snapshot)){if(ticket===publication)$('#sync').textContent='已发布 · 第 '+snapshot.revision+' 版 · '+new Date(snapshot.updatedAt).toLocaleTimeString('zh-CN',{hour12:false});return;}}catch{}
+  try{if(await store.isPublished(snapshot)){if(ticket===publication){$('#sync').textContent='已发布 · 第 '+snapshot.revision+' 版 · '+new Date(snapshot.updatedAt).toLocaleTimeString('zh-CN',{hour12:false});notice('歌单已发布到正式网站。打开或刷新网站即可读取；已打开的页面也会在一分钟内自动检查更新。');}return;}}catch{}
   if(ticket!==publication)return;
   $('#sync').textContent='已保存 · 第 '+snapshot.revision+' 版正在发布';
   await new Promise(resolve=>setTimeout(resolve,5000));
